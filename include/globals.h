@@ -25,3 +25,5 @@ extern pros::Motor intake;
 // Sensor Initialization
 extern pros::ADIAnalogIn lineTracker;
 extern pros::ADIUltrasonic ultrasonic;
+
+extern pros::IMU gyro;
