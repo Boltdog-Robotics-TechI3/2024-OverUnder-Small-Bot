@@ -344,6 +344,11 @@ void initialize() {
 
 	// calibrating encoders and gyro
 	leftLiftMotor.set_encoder_units(MOTOR_ENCODER_ROTATIONS);
+
+	gyro.reset();
+	gyro.set_heading(0);
+
+	drivetrainInitialize();
 }
 
 /**
@@ -373,6 +378,7 @@ void competition_initialize() {
 	pros::lcd::register_btn1_cb(on_center_button);
 	pros::lcd::register_btn0_cb(on_right_button);
 	pros::lcd::register_btn2_cb(on_left_button);
+	drivetrainInitialize();
 	}
 
 /**
@@ -426,14 +432,18 @@ void opcontrol() {
 	leftLiftMotor.tare_position();
 
 	while (true) {
+        // master.set_text(1, 0, to_string(gyro.get_heading()));
+
 		if (master.get_digital(DIGITAL_LEFT) && master.get_digital(DIGITAL_RIGHT)) {
 			// autonomous();
-			rotateToHeadingGyro(90);
+			rotateToHeadingPID(90.0);
+
+			
 		}
 
 		pros::lcd::set_text(6, "Catapult Encoder: " + to_string(catapult.get_position()));
 
-		matchLoad();
+		//matchLoad();
 		
 		pros::lcd::set_text(0, "Drivetrain Left Encoder: " + to_string(frontLeftMotor.get_position()));
 
@@ -442,7 +452,7 @@ void opcontrol() {
 
 		//Split Arcade control code
 		drive();
-
+/*
 		// This block launches the triball when the correct buttons is pressed
 		if (master.get_digital(DIGITAL_R2) && triballLoaded()) {
 			launchTriball();
@@ -489,7 +499,7 @@ void opcontrol() {
 		else {
 			catapult.move(0);
 		}
-
+*/
 		pros::delay(20);
 	}
 }	

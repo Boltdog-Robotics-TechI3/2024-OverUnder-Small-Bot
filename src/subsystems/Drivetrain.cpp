@@ -12,7 +12,18 @@ using namespace std;
 //     360 // wheel rpm
 // };
 
-lemlib::FAPID pid(0, 0, .2, 0, 0, "billy");
+lemlib::FAPID drivePID{0, 0, .2, 0, 0, "billy"};
+lemlib::FAPID turnPID{
+    0,//ff
+    .05,//aceleration
+    2.25,//p
+    0,//i
+    0.2,//d
+    "johnny"//name
+};
+void drivetrainInitialize(){
+    turnPID.setExit(360, .5, 5000, 500, 10000);
+}
 
 // User Drive Function
 void drive() {
@@ -25,6 +36,9 @@ void drive() {
     pros::lcd::set_text(6, "Heading:" + to_string(gyro.get_heading()));
 
     int error = 90 - gyro.get_heading();
+
+
+    master.set_text(0, 0, to_string(turnPID.settled()));
     
 		// int motorVal = error * .2;
         // pros::lcd::set_text(5, "Motor Val: " + to_string(motorVal));
@@ -58,11 +72,11 @@ void moveDistancePID(int distance) {
     float targetPos = frontLeftMotor.get_position() + distance;
 
     //This sets the exit conditions
-    pid.setExit(20000, 10, 500000, 0, 5000000);
+    drivePID.setExit(2000, 10, 5000, 0, 5000000);
     int motorVal = 0;
 
     while (true)
-        motorVal = pid.update(targetPos, frontLeftMotor.get_position(), false);
+        motorVal = drivePID.update(targetPos, frontLeftMotor.get_position(), false);
         leftSideMotors.move(motorVal);
         rightSideMotors.move(motorVal);
 
@@ -91,11 +105,11 @@ void rotateToHeading(int angle, int speed) {
 
 // rotate to face a certain angle using a p controller and the gyro
 void rotateToHeadingGyro(double angle) {
-    double kP = 1.5;
+    double kP = 1.75;
 
     double error = angle - gyro.get_heading();
 
-    while (true) {
+    while (abs(error) > .5) {
 		int motorVal = error * kP;
 		leftSideMotors.move(motorVal);
 		rightSideMotors.move(-motorVal);
@@ -105,3 +119,21 @@ void rotateToHeadingGyro(double angle) {
     leftSideMotors.move(0);
 	rightSideMotors.move(0);
 }
+
+
+
+void rotateToHeadingPID(double angle){
+    int motorVal = 0;
+    turnPID.update(angle, gyro.get_heading(), false);
+    while (!turnPID.settled()) {
+        motorVal = turnPID.update(angle, gyro.get_heading(), false);
+        leftSideMotors.move(motorVal);
+        rightSideMotors.move(-motorVal);
+        // master.set_text(1, 0, to_string(gyro.get_heading()));
+        master.set_text(0, 0, to_string(turnPID.settled()));
+    }
+    turnPID.reset();
+    leftSideMotors.move(0);
+    rightSideMotors.move(0);
+}
+    

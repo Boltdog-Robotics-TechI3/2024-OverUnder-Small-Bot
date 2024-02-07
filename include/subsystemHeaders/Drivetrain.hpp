@@ -14,4 +14,6 @@ void moveDistancePID(int distance);
 void rotateToHeading(int angle, int speed);
  
 void rotateToHeadingGyro(double angle);
+
+void rotateToHeadingPID(double angle);
  
