@@ -22,7 +22,7 @@ lemlib::FAPID turnPID{
     "johnny"//name
 };
 
-lemlib::time timer{};
+// lemlib::time timer{};
 void drivetrainInitialize(){
     turnPID.setExit(360, .5, 5000, 500, 10000);
 }
@@ -137,7 +137,6 @@ void rotateToHeadingPID(double angle){
         if (abs(error) < 2) {
 
         }
-
     }
     turnPID.reset();
     leftSideMotors.move(0);
