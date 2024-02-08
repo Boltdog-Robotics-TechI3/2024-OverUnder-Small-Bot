@@ -21,6 +21,8 @@ lemlib::FAPID turnPID{
     0.2,//d
     "johnny"//name
 };
+
+lemlib::time timer{};
 void drivetrainInitialize(){
     turnPID.setExit(360, .5, 5000, 500, 10000);
 }
@@ -124,13 +126,18 @@ void rotateToHeadingGyro(double angle) {
 
 void rotateToHeadingPID(double angle){
     int motorVal = 0;
-    turnPID.update(angle, gyro.get_heading(), false);
-    while (!turnPID.settled()) {
+    double error = angle - gyro.get_heading();
+    while () {
         motorVal = turnPID.update(angle, gyro.get_heading(), false);
         leftSideMotors.move(motorVal);
         rightSideMotors.move(-motorVal);
         // master.set_text(1, 0, to_string(gyro.get_heading()));
         master.set_text(0, 0, to_string(turnPID.settled()));
+        error = angle - gyro.get_heading();
+        if (abs(error) < 2) {
+
+        }
+
     }
     turnPID.reset();
     leftSideMotors.move(0);
