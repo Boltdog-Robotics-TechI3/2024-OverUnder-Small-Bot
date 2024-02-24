@@ -3,16 +3,59 @@
 using namespace std;
 #include "lemlib/api.hpp"
 
-// lemlib's drivetrain object, will only use if we get tracking wheels :(
-// lemlib::Drivetrain_t drivetrain {
-//     leftSideMotors, // left drivetrain motors
-//     rightSideMotors, // right drivetrain motors
-//     13, // track width
-//     2.75, // wheel diameter
-//     360 // wheel rpm
-// };
+// lemlib's drivetrain object
+lemlib::Drivetrain_t drivetrain {
+    leftDrive, // left drivetrain motors
+    rightDrive, // right drivetrain motors
+    13, // track width
+    2.75, // wheel diameter
+    360 // wheel rpm
+};
 
-lemlib::FAPID drivePID{0, 0, .2, 0, 0, "billy"};
+lemlib::OdomSensors_t odometry {
+    nullptr,
+    nullptr,
+    nullptr, 
+    nullptr, 
+    &gyro // inertial sensor
+};
+
+// forward/backward PID
+lemlib::ChassisController_t lateralController {
+    8, // kP
+    30, // kD
+    1, // smallErrorRange
+    100, // smallErrorTimeout
+    3, // largeErrorRange
+    500, // largeErrorTimeout
+    5 // slew rate
+};
+ 
+// turning PID
+lemlib::ChassisController_t angularController {
+    4, // kP
+    40, // kD
+    1, // smallErrorRange
+    100, // smallErrorTimeout
+    3, // largeErrorRange
+    500, // largeErrorTimeout
+    0 // slew rate
+};
+
+// create the chassis
+lemlib::Chassis chassis(drivetrain, lateralController, angularController, sensors);
+
+
+// PID controllers for if we dont use LemLib drivetrain stuff
+lemlib::FAPID drivePID{
+    0, 
+    0, 
+    .2, 
+    0, 
+    0, 
+    "billy"
+
+};
 lemlib::FAPID turnPID{
     0,//ff
     .05,//aceleration
@@ -23,8 +66,19 @@ lemlib::FAPID turnPID{
 };
 
 // lemlib::time timer{};
+
+// Code to be run upon initialization
 void drivetrainInitialize(){
-    turnPID.setExit(360, .5, 5000, 500, 10000);
+	gyro.reset();
+	gyro.set_heading(0);
+    chassis.calibrate();
+    chassis.setPose(0, 0, 0); // X: 0, Y: 0, Heading: 0
+
+}
+
+// Code to be run repeatedly in OpControl
+void drivetrainPeriodic() {
+
 }
 
 // User Drive Function
@@ -32,8 +86,8 @@ void drive() {
 	int power = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
 	int turn = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
-	leftSideMotors = pow((power + turn), 3) / pow(127, 2);
-    rightSideMotors = pow((power - turn), 3) / pow(127, 2);
+	leftDrive = pow((power + turn), 3) / pow(127, 2);
+    rightDrive = pow((power - turn), 3) / pow(127, 2);
 
     pros::lcd::set_text(6, "Heading:" + to_string(gyro.get_heading()));
 
@@ -57,14 +111,14 @@ void moveDistance(int distance, int speed) {
     // leftDrive.move_absolute(targetDistanceLeft, speed);
     // rightDrive.move_absolute(targetDistanceRight, speed);
 
-    leftSideMotors.move_relative(distance, speed);
-    rightSideMotors.move_relative(distance, speed);
+    leftDrive.move_relative(distance, speed);
+    rightDrive.move_relative(distance, speed);
 
     while (abs(abs(targetDistanceLeft) - abs(frontLeftMotor.get_position())) > 20) {
     }
 	
-    leftSideMotors.move_relative(0, speed);
-    rightSideMotors.move_relative(0, speed);
+    leftDrive.move_relative(0, speed);
+    rightDrive.move_relative(0, speed);
     pros::delay(200);
 }
 
@@ -79,30 +133,11 @@ void moveDistancePID(int distance) {
 
     while (true)
         motorVal = drivePID.update(targetPos, frontLeftMotor.get_position(), false);
-        leftSideMotors.move(motorVal);
-        rightSideMotors.move(motorVal);
+        leftDrive.move(motorVal);
+        rightDrive.move(motorVal);
 
-    leftSideMotors.move(0);
-    rightSideMotors.move(0);
-}
-
-// Target angle is relative to the robot's current heading, so a 90 will mean the robot will turn 90 degrees
-void rotateToHeading(int angle, int speed) {
-    // the distance the motor needs to travel in order to reach the desired rotation
-    double distance = 2335 * ((angle - 5) / 360.0);
-
-    // the actual target encoder value for the leftDrive
-    double targetDistanceLeft = frontLeftMotor.get_position() + distance;
-    double targetDistanceRight = frontRightMotor.get_position() - distance;
-
-    // set the motors to move to the target positions. (This will move and stop the motors on its own [apparently])
-    leftSideMotors.move_absolute(targetDistanceLeft, speed);
-    rightSideMotors.move_absolute(targetDistanceRight, speed);
-
-    while (abs(abs(targetDistanceLeft) - abs(frontLeftMotor.get_position())) > 50) {
-    }
-    
-    pros::delay(200);
+    leftDrive.move(0);
+    rightDrive.move(0);
 }
 
 // rotate to face a certain angle using a p controller and the gyro
@@ -113,13 +148,13 @@ void rotateToHeadingGyro(double angle) {
 
     while (abs(error) > .5) {
 		int motorVal = error * kP;
-		leftSideMotors.move(motorVal);
-		rightSideMotors.move(-motorVal);
+		leftDrive.move(motorVal);
+		rightDrive.move(-motorVal);
 	    error = angle - gyro.get_heading();
 	}
 
-    leftSideMotors.move(0);
-	rightSideMotors.move(0);
+    leftDrive.move(0);
+	rightDrive.move(0);
 }
 
 
@@ -129,8 +164,8 @@ void rotateToHeadingPID(double angle){
     double error = angle - gyro.get_heading();
     while () {
         motorVal = turnPID.update(angle, gyro.get_heading(), false);
-        leftSideMotors.move(motorVal);
-        rightSideMotors.move(-motorVal);
+        leftDrive.move(motorVal);
+        rightDrive.move(-motorVal);
         // master.set_text(1, 0, to_string(gyro.get_heading()));
         master.set_text(0, 0, to_string(turnPID.settled()));
         error = angle - gyro.get_heading();
@@ -139,7 +174,10 @@ void rotateToHeadingPID(double angle){
         }
     }
     turnPID.reset();
-    leftSideMotors.move(0);
-    rightSideMotors.move(0);
+    leftDrive.move(0);
+    rightDrive.move(0);
 }
-    
+
+void rotateToHeading() {
+    chassis.turnTo(0, 0, 1000, false);
+}

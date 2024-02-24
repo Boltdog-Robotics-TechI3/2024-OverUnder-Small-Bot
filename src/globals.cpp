@@ -12,8 +12,8 @@ pros::Motor frontRightMotor(12, MOTOR_GEAR_BLUE, false, MOTOR_ENCODER_COUNTS);
 pros::Motor backLeftMotor(20, MOTOR_GEAR_BLUE, true, MOTOR_ENCODER_COUNTS);
 pros::Motor backRightMotor(11, MOTOR_GEAR_BLUE, false, MOTOR_ENCODER_COUNTS);
 
-pros::Motor_Group leftSideMotors({frontLeftMotor, backLeftMotor});
-pros::Motor_Group rightSideMotors({frontRightMotor, backRightMotor});
+pros::Motor_Group leftDrive({frontLeftMotor, backLeftMotor});
+pros::Motor_Group rightDrive({frontRightMotor, backRightMotor});
 
 pros::Motor leftLiftMotor(5, true);
 pros::Motor rightLiftMotor(6);

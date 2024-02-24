@@ -175,9 +175,6 @@ void initialize() {
 	// calibrating encoders and gyro
 	leftLiftMotor.set_encoder_units(MOTOR_ENCODER_ROTATIONS);
 
-	gyro.reset();
-	gyro.set_heading(0);
-
 	drivetrainInitialize();
 }
 

@@ -1,7 +1,8 @@
 #include "main.h"
 
-
 void drivetrainInitialize();
+
+void drivetrainPeriodic();
 
 void drivetrainPeriodic(bool override);
 
