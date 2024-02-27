@@ -190,6 +190,10 @@ void rotateToHeadingPID(double angle){
     rightDrive.move(0);
 }
 
-void rotateToHeading() {
-    chassis.turnTo(0, 0, 1000, false);
+// Move to pose from lemlib but made relative.
+void moveTo(double xDist, double yDist, int timeout) {
+    chassis.setPose(0, 0, 0);
+    double y = chassis.getPose().y + yDist;
+    double x = chassis.getPose().x + xDist;
+    chassis.moveTo(x, y, timeout);
 }
