@@ -2,11 +2,14 @@
 #include <iostream>
 using namespace std;
 #include "lemlib/api.hpp"
+// #include <okapi/impl/util/timer.hpp>
+#include "../../include/utilHeaders/Timer.hpp"
+
 
 // lemlib's drivetrain object
 lemlib::Drivetrain_t drivetrain {
-    leftDrive, // left drivetrain motors
-    rightDrive, // right drivetrain motors
+    &leftDrive, // left drivetrain motors
+    &rightDrive, // right drivetrain motors
     13, // track width
     2.75, // wheel diameter
     360 // wheel rpm
@@ -43,7 +46,7 @@ lemlib::ChassisController_t angularController {
 };
 
 // create the chassis
-lemlib::Chassis chassis(drivetrain, lateralController, angularController, sensors);
+lemlib::Chassis chassis(drivetrain, lateralController, angularController, odometry);
 
 
 // PID controllers for if we dont use LemLib drivetrain stuff
@@ -65,6 +68,9 @@ lemlib::FAPID turnPID{
     "johnny"//name
 };
 
+Timer timer;
+
+
 // lemlib::time timer{};
 
 // Code to be run upon initialization
@@ -78,7 +84,7 @@ void drivetrainInitialize(){
 
 // Code to be run repeatedly in OpControl
 void drivetrainPeriodic() {
-
+    drive();
 }
 
 // User Drive Function
@@ -162,7 +168,7 @@ void rotateToHeadingGyro(double angle) {
 void rotateToHeadingPID(double angle){
     int motorVal = 0;
     double error = angle - gyro.get_heading();
-    while () {
+    while (timer.getElapsedTime() > 1) {
         motorVal = turnPID.update(angle, gyro.get_heading(), false);
         leftDrive.move(motorVal);
         rightDrive.move(-motorVal);
@@ -170,9 +176,15 @@ void rotateToHeadingPID(double angle){
         master.set_text(0, 0, to_string(turnPID.settled()));
         error = angle - gyro.get_heading();
         if (abs(error) < 2) {
-
+            timer.start();
+        }
+        else {
+            timer.stop();
+            timer.clear();    
         }
     }
+    timer.stop();
+    timer.clear();   
     turnPID.reset();
     leftDrive.move(0);
     rightDrive.move(0);

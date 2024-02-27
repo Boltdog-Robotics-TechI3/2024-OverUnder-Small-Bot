@@ -277,56 +277,9 @@ void opcontrol() {
 		liftPos = leftLiftMotor.get_position();
 		pros::lcd::print(2, "%f", liftPos);
 
-		//Split Arcade control code
-		drive();
-/*
-		// This block launches the triball when the correct buttons is pressed
-		if (master.get_digital(DIGITAL_R2) && triballLoaded()) {
-			launchTriball();
-		}
 
-		// This block lifts the lift and intake up and down
-		if (master.get_digital(DIGITAL_L1)) {
-			if (liftPos < 2 || master.get_digital(DIGITAL_B)) {
-				lift.move(127);
-			}
-			else {
-				lift.move(0);
-			}
-		}
-		else if (master.get_digital(DIGITAL_L2)) {
-			if (liftPos > 0) {
-				lift.move(-127);
-				intake.move(127);
-			}
-			else {
-				lift.move(0);
-			}
-		}
-		else {
-			lift.move(0);
-			intake.move(0);
-		}
 
-		// This block operates the intake motors
-		if (master.get_digital(DIGITAL_UP)) {
-			intake.move(127);
-		}
-		else if (master.get_digital(DIGITAL_DOWN)) {
-			intake.move(-127);
-		}
 
-		if (master.get_digital_new_press(DIGITAL_A)){
-			primeCatapult();
-		}
-
-		if (master.get_digital(DIGITAL_Y)) {
-			catapult.move(100);
-		}
-		else {
-			catapult.move(0);
-		}
-*/
 		pros::delay(20);
 	}
 }	
