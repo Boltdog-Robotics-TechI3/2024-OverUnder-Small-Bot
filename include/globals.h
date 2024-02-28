@@ -5,8 +5,6 @@ extern pros::Controller master;
 
 
 // Motor Initialization
-extern pros::Motor catapult;
-
 extern pros::Motor frontLeftMotor;
 extern pros::Motor frontRightMotor;
 
@@ -16,11 +14,7 @@ extern pros::Motor backRightMotor;
 extern pros::Motor_Group leftDrive;
 extern pros::Motor_Group rightDrive;
 
-extern pros::Motor leftLiftMotor;
-extern pros::Motor rightLiftMotor;
-extern pros::Motor_Group lift;
-
-extern pros::Motor intake;
+extern pros::Motor slapper;
 
 // Sensor Initialization
 extern pros::ADIAnalogIn lineTracker;

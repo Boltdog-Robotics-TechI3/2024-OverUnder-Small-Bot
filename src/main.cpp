@@ -14,62 +14,6 @@ static bool blue = true;
 static bool isMatchLoading = false;
 
 
-
-
-// Checks to see if a triball is loaded
-bool triballLoaded() {
-    return ultrasonic.get_value() < 100;
-}
-
-// Makes sure the catapult is in the proper position to fire
-void primeCatapult() {
-	int lineTrackerVal;
-	lineTrackerVal = lineTracker.get_value();
-	if (lineTrackerVal > 300) {
-		catapult.move(127);
-		while(lineTrackerVal > 300) {
-			drive();
-			lineTrackerVal = lineTracker.get_value();
-			if (lineTrackerVal < 300) {
-				catapult.move(0);
-				catapult.set_brake_mode(MOTOR_BRAKE_HOLD);
-			}
-		}
-	}
-	else {
-		catapult.move(0);
-		catapult.set_brake_mode(MOTOR_BRAKE_HOLD);
-	}
-}
-
-// Fires the triball
-void launchTriball() {
-	catapult.move(100);
-	pros::delay(300);
-	primeCatapult();
-}
-
-void launchTriballNoPrime() {
-	catapult.move(100);
-	pros::delay(200);
-	}
-
-void matchLoad() {
-	while(master.get_digital(DIGITAL_X)) {
-		lift.move(-90);
-		pros::delay(650);
-		lift.move(0);
-		pros::delay(500);
-		intake.move(0);
-		launchTriball();
-		lift.move(90);
-		pros::delay(650);
-		lift.move(0);
-		intake.move(127);
-		pros::delay(700);
-		}
-}
-
 /**
  * A callback function for LLEMU's center button.
  *
@@ -164,16 +108,6 @@ void initialize() {
 	pros::lcd::register_btn0_cb(on_right_button);
 	pros::lcd::register_btn2_cb(on_left_button);
 
-	// setting motor brake modes
-	frontLeftMotor.set_brake_mode(MOTOR_BRAKE_BRAKE);
-	frontRightMotor.set_brake_mode(MOTOR_BRAKE_BRAKE);
-	backLeftMotor.set_brake_mode(MOTOR_BRAKE_BRAKE);
-	backRightMotor.set_brake_mode(MOTOR_BRAKE_BRAKE);
-
-	lift.set_brake_modes(MOTOR_BRAKE_HOLD);
-
-	// calibrating encoders and gyro
-	leftLiftMotor.set_encoder_units(MOTOR_ENCODER_ROTATIONS);
 
 	drivetrainInitialize();
 }
@@ -254,31 +188,18 @@ void autonomous() {
  */
 
 void opcontrol() {
-	float liftPos;
-	primeCatapult();
-	leftLiftMotor.tare_position();
-
 	while (true) {
         // master.set_text(1, 0, to_string(gyro.get_heading()));
 
 		if (master.get_digital(DIGITAL_LEFT) && master.get_digital(DIGITAL_RIGHT)) {
 			// autonomous();
-			rotateToHeadingPID(90.0);
 
-			
 		}
 
-		pros::lcd::set_text(6, "Catapult Encoder: " + to_string(catapult.get_position()));
-
-		//matchLoad();
+		drivetrainPeriodic();
+		slapperPeriodic(false);
 		
 		pros::lcd::set_text(0, "Drivetrain Left Encoder: " + to_string(frontLeftMotor.get_position()));
-
-		liftPos = leftLiftMotor.get_position();
-		pros::lcd::print(2, "%f", liftPos);
-
-
-
 
 		pros::delay(20);
 	}

@@ -78,6 +78,7 @@ void opcontrol(void);
 #include <iostream>
 #include "globals.h"
 #include "subsystemHeaders/Drivetrain.hpp"
+#include "subsystemHeaders/Slapper.hpp"
 
 #endif
 
